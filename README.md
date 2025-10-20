@@ -21,56 +21,56 @@ Built with Flask and a Neon Blue UI, it offers a futuristic interface that simul
 💡 Modern UI: Styled with neon blue and dark theme aesthetics.
 
 🧩 Tech Stack
-Component	            Technology
-Backend	            Python (Flask)
-Frontend	        HTML, CSS (Neon Blue Theme), Bootstrap
-ML Model	        Scikit-learn / NLP
-Resume Parsing    	PyPDF2, docx2txt, regex
-Visualization	    Chart.js / Custom progress bar
-Deployment	        Localhost (Flask)
+      Component	          Technology
+      Backend	            Python (Flask)
+      Frontend	          HTML, CSS (Neon Blue Theme), Bootstrap
+      ML Model	          Scikit-learn / NLP
+      Resume Parsing    	PyPDF2, docx2txt, regex
+      Visualization	      Chart.js / Custom progress bar
+      Deployment	        Localhost (Flask)
 
 ⚙️ Installation & Setup
 
-Follow the steps below to run the project locally:
+->Follow the steps below to run the project locally:
 
-Clone the repository
+->Clone the repository
 
 git clone https://github.com/<your-username>/AI-Resume-Screener.git
 cd AI-Resume-Screener
 
 
-Create and activate a virtual environment
+->Create and activate a virtual environment
 
 python -m venv venv
 venv\Scripts\activate    # For Windows
 source venv/bin/activate # For Linux/Mac
 
 
-Install dependencies
+->Install dependencies
 
 pip install -r requirements.txt
 
 
-Run the Flask application
+->Run the Flask application
 
 python app.py
 
 
-Open your browser and visit
+->Open your browser and visit
 
 http://127.0.0.1:5000
 
 🧠 How It Works
 
-Upload a resume file (.pdf or .docx).
+->Upload a resume file (.pdf or .docx).
 
-The backend extracts key details (skills, contact info, etc.).
+->The backend extracts key details (skills, contact info, etc.).
 
-The ML model classifies the candidate’s domain.
+->The ML model classifies the candidate’s domain.
 
-A role recommendation and ATS feedback are generated.
+->A role recommendation and ATS feedback are generated.
 
-Results are displayed on the /pred page with detailed visuals.
+->Results are displayed on the /pred page with detailed visuals.
 
 🧾 Example Output
 
@@ -82,16 +82,17 @@ Results are displayed on the /pred page with detailed visuals.
 
 💬 Future Enhancements
 
-Add NLP-based keyword optimization suggestions.
+->Add NLP-based keyword optimization suggestions.
 
-Integrate real-time job API (e.g., LinkedIn/Indeed).
+->Integrate real-time job API (e.g., LinkedIn/Indeed).
 
-Implement multilingual resume support.
+->Implement multilingual resume support.
 
-Enable cloud deployment (AWS, Render, or HuggingFace Spaces).
+->Enable cloud deployment (AWS, Render, or HuggingFace Spaces).
 
 👩‍💻 Author
 
 Areeza Usmani
 gmail:areezausmani@gmail.com
-github repo:
+
+github repo:https://github.com/AreezaUsmani/AI-Resume-Screening-Terminal.git
