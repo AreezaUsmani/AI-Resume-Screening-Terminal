@@ -23,10 +23,15 @@ Built with Flask and a Neon Blue UI, it offers a futuristic interface that simul
 **🧩 Tech Stack**
      **Component**	          **Technology**
       Backend	                Python (Flask)
+      
       Frontend	                HTML, CSS (Neon Blue Theme), Bootstrap
+      
       ML Model	                Scikit-learn / NLP
+      
       Resume Parsing    	    PyPDF2, docx2txt, regex
+      
       Visualization	            Chart.js / Custom progress bar
+      
       Deployment	            Localhost (Flask)
 
 **⚙️ Installation & Setup**
