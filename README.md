@@ -1,279 +1,97 @@
 # AI-Resume-Screening-Terminal
-<!DOCTYPE html>
-<html lang="en">
+🧠 AI Resume Screening Terminal
 
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Resume Screener - Neon Blue</title>
-    
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'neon-blue': '#00FFFF', /* Bright Cyan/Neon Blue */
-                        'bg-dark': '#0f172a', /* Dark Blue/Slate Background */
-                        'text-light': '#f1f5f9',
-                        'accent-dark': '#0d9488', /* A complementary teal/cyan for depth */
-                    },
-                    fontFamily: {
-                        'mono': ['Consolas', 'Monaco', 'Courier New', 'monospace'],
-                        'sans': ['Inter', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
-    
-    <style>
-        /* Optional: Custom style for the neon glow effect */
-        .neon-text {
-            text-shadow: 0 0 5px rgba(0, 255, 255, 0.8), 0 0 10px rgba(0, 255, 255, 0.5);
-            transition: all 0.3s ease;
-        }
+AI Resume Screening Terminal is a machine-learning–powered web application designed to analyze resumes, extract key information, predict job categories, and recommend suitable roles.
+Built with Flask and a Neon Blue UI, it offers a futuristic interface that simulates an ATS (Applicant Tracking System) environment.
 
-        .neon-border {
-            box-shadow: 0 0 8px rgba(0, 255, 255, 0.6);
-            border: 1px solid #00FFFF;
-        }
-        
-        /* Style the file input button (often difficult to style directly) */
-        input[type="file"]::file-selector-button {
-            background-color: #00FFFF;
-            color: #0f172a;
-            border: none;
-            padding: 8px 16px;
-            margin-right: 15px;
-            cursor: pointer;
-            border-radius: 4px;
-            font-weight: 600;
-            transition: background-color 0.3s;
-        }
+🚀 Features
 
-        input[type="file"]::file-selector-button:hover {
-            background-color: #00cccc;
-        }
+📂 Resume Upload: Supports PDF and DOCX resume uploads.
 
-        /* Custom styles for the circular progress bar (ATS Score) */
-        .circle-progress {
-            position: relative;
-            height: 80px;
-            width: 80px;
-            border-radius: 50%;
-            /* Initial state (will be set by JS on load) */
-            background: conic-gradient(
-                #00FFFF var(--progress, 0deg), 
-                #0f172a var(--progress, 0deg)
-            );
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 1.5s ease-out; /* Add transition here for smooth animation */
-        }
+🤖 Machine Learning Model: Predicts job category (e.g., Data Science, Software Developer).
 
-        .circle-progress::before {
-            content: "";
-            position: absolute;
-            height: 60px;
-            width: 60px;
-            border-radius: 50%;
-            background-color: #0f172a;
-        }
+💼 Role Recommendation: Suggests relevant job titles.
 
-        .progress-value {
-            position: relative;
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: #00FFFF;
-            z-index: 10;
-        }
-    </style>
-</head>
+📊 ATS Score: Simulated score based on keyword and skill match.
 
-<body class="bg-bg-dark text-text-light font-sans min-h-screen p-5">
+🧾 Feedback Section: Personalized suggestions to improve resume structure and targeting.
 
-    <div class="container mx-auto max-w-4xl bg-gray-800 rounded-xl shadow-2xl overflow-hidden border border-neon-blue/50">
+🔍 Information Extraction: Extracts candidate name, email, phone, and skills automatically.
 
-        <header class="p-8 text-center bg-gray-900 border-b-4 border-neon-blue">
-            <h1 class="text-3xl font-mono tracking-wider uppercase neon-text">
-                <span class="text-neon-blue">AI</span> Resume Screening Terminal
-            </h1>
-            <p class="text-gray-400 mt-2">Machine Learning-Powered Talent Insight</p>
-            
-            <ul class="flex justify-center mt-4 space-x-6 text-sm text-neon-blue">
-                <li class="neon-text">✅ Categorization</li>
-                <li class="neon-text">💡 Job Recommendation</li>
-                <li class="neon-text">🔧 Info Extraction</li>
-            </ul>
-        </header>
+💡 Modern UI: Styled with neon blue and dark theme aesthetics.
 
-        <main class="p-8">
+🧩 Tech Stack
+Component	            Technology
+Backend	            Python (Flask)
+Frontend	        HTML, CSS (Neon Blue Theme), Bootstrap
+ML Model	        Scikit-learn / NLP
+Resume Parsing    	PyPDF2, docx2txt, regex
+Visualization	    Chart.js / Custom progress bar
+Deployment	        Localhost (Flask)
 
-            <section class="mb-10 p-6 bg-gray-900 rounded-lg shadow-inner">
-                <h2 class="text-xl font-semibold text-neon-blue mb-4 uppercase">Upload Resume File</h2>
-                
-                <form id="uploadForm" action="/pred" method="post" enctype="multipart/form-data" class="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6">
-                    
-                    <input type="file" name="resume" accept=".pdf, .txt" required class="flex-grow p-2 rounded bg-gray-700 text-text-light border border-neon-blue/30 w-full md:w-auto">
-                    
-                    <button type="submit" class="w-full md:w-auto px-6 py-2 font-bold rounded uppercase bg-neon-blue text-gray-900 hover:bg-neon-blue/80 transition duration-200 shadow-lg hover:shadow-neon-blue/50">
-                        Process
-                    </button>
-                </form>
-            </section>
-            
-            {% if message %}
-            <div id="messageArea" class="bg-gray-700 p-3 rounded text-center text-neon-blue border border-neon-blue/50 font-mono mb-6">
-                {{ message }}
-            </div>
-            {% endif %}
+⚙️ Installation & Setup
 
-            {% if predicted_category %}
-            
-            <!-- HIDDEN DATA ELEMENT: Used to pass the ATS score to JavaScript without linter errors -->
-            {% if ats_score is not none %}
-            <span id="ats-data" data-score="{{ ats_score }}" style="display: none;"></span>
-            {% endif %}
-            <!-- END HIDDEN DATA ELEMENT -->
+Follow the steps below to run the project locally:
 
-            <section id="resultsSection" class="space-y-6">
-                <h2 class="text-xl font-semibold text-neon-blue uppercase neon-text">Analysis Report</h2>
-                
-                <!-- 1. SCORE, CLASSIFICATION & JOB FIT -->
-                <div class="result-card bg-gray-900 p-6 rounded-lg neon-border">
-                    <h3 class="text-lg font-bold text-neon-blue mb-3">Classification, Score & Job Fit</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm items-center">
-                        
-                        <!-- ATS Score Circle -->
-                        <div class="flex flex-col items-center justify-center">
-                            <b class="text-neon-blue mb-2 block uppercase text-center">ATS Score</b>
-                            <div class="circle-progress" id="ats-circle" style="--progress: 0deg;">
-                                <span class="progress-value" id="ats-value">0%</span>
-                            </div>
-                            <p class="text-xs text-gray-400 mt-1">(Simulated Skill Match)</p>
-                        </div>
+Clone the repository
 
-                        <!-- Category and Job Recommendation -->
-                        <div class="md:col-span-2 space-y-4">
-                            <p>
-                                <b class="text-neon-blue block">Predicted Category:</b> 
-                                <span class="font-mono text-lg text-neon-blue">{{ predicted_category }}</span>
-                            </p>
-                            <p>
-                                <b class="text-neon-blue block">Recommended Role:</b> 
-                                <span class="font-mono text-lg text-neon-blue">{{ recommended_job }}</span>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- 2. PERSONALIZED ATS TIPS (DYNAMIC) -->
-                <div class="result-card bg-gray-900 p-6 rounded-lg neon-border">
-                    <h3 class="text-lg font-bold text-neon-blue mb-4">💡 Personalized ATS Feedback</h3>
-                    <div class="space-y-4">
-                    {% for tip in personalized_tips %}
-                        {% set color = 'text-green-400' if tip.category == 'Positive' else ('text-red-400' if tip.category == 'Critical' else ('text-yellow-400' if tip.category == 'High Priority' else 'text-cyan-400')) %}
-                        
-                        <div class="p-3 rounded-lg border-l-4 border-{{ color[5:] }}">
-                            <p class="font-semibold {{ color }}">
-                                {{ tip.title }} 
-                                <span class="text-xs text-gray-500">({{ tip.category }})</span>
-                            </p>
-                            <p class="text-sm text-text-light/80 mt-1">{{ tip.detail }}</p>
-                        </div>
-                    {% endfor %}
-                    </div>
-                </div>
+git clone https://github.com/<your-username>/AI-Resume-Screener.git
+cd AI-Resume-Screener
 
-                <!-- 3. EXTRACTED CONTACT INFORMATION -->
-                <div class="result-card bg-gray-900 p-6 rounded-lg neon-border">
-                    <h3 class="text-lg font-bold text-neon-blue mb-3">Extracted Contact Information</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm font-mono">
-                        <p><b>Name:</b> {{ name }}</p>
-                        <p><b>Phone No:</b> {{ phone }}</p>
-                        <p><b>Email:</b> {{ email }}</p>
-                    </div>
-                </div>
-                
-                <!-- 4. PARSED RESUME DETAILS -->
-                <div class="result-card bg-gray-900 p-6 rounded-lg neon-border">
-                    <h3 class="text-lg font-bold text-neon-blue mb-3">Parsed Resume Details</h3>
-                    
-                    <p class="text-neon-blue font-semibold mt-4 mb-2">Skills:</p>
-                    {% if extracted_skills %}
-                    <ul class="grid grid-cols-2 md:grid-cols-3 gap-2 list-none p-0 text-sm">
-                        {% for skill in extracted_skills %}
-                        <li class="bg-gray-800 p-2 rounded border border-accent-dark font-mono text-accent-dark">
-                            &gt; {{ skill }}
-                        </li>
-                        {% endfor %}
-                    </ul>
-                    {% else %}
-                    <p class="text-gray-400 text-center">No core skills were reliably extracted.</p>
-                    {% endif %}
 
-                    <p class="text-neon-blue font-semibold mt-6 mb-2">Education:</p>
-                    {% if extracted_education %}
-                    <ul class="list-none p-0 text-sm">
-                        {% for edu in extracted_education %}
-                        <li class="bg-gray-800 p-3 rounded mb-2 border-l-4 border-neon-blue/70">
-                            {{ edu }}
-                        </li>
-                        {% endfor %}
-                    </ul>
-                    {% else %}
-                    <p class="text-gray-400 text-center">No educational history found.</p>
-                    {% endif %}
-                </div>
+Create and activate a virtual environment
 
-            </section>
-            {% endif %}
+python -m venv venv
+venv\Scripts\activate    # For Windows
+source venv/bin/activate # For Linux/Mac
 
-        </main>
-    </div>
 
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const fileInput = document.querySelector('input[type="file"]');
-            if (fileInput) {
-                fileInput.addEventListener('change', (e) => {
-                    const fileName = e.target.files[0] ? e.target.files[0].name : 'Select a file...';
-                    console.log('File selected:', fileName);
-                });
-            }
+Install dependencies
 
-            // --- ATS Circular Percentage Logic ---
-            const atsDataElement = document.getElementById('ats-data');
-            
-            // Check if the hidden data element exists (it only exists if the server calculated a score)
-            if (atsDataElement) {
-                // Read the score from the data attribute and parse it
-                const atsScoreString = atsDataElement.dataset.score;
-                const atsScore = parseInt(atsScoreString, 10);
-                
-                const atsCircle = document.getElementById('ats-circle');
-                const atsValue = document.getElementById('ats-value');
+pip install -r requirements.txt
 
-                // Set the initial visual state
-                atsValue.textContent = atsScore + '%';
-                
-                // Calculate the degree for the conic gradient (0 to 360)
-                const degree = (atsScore / 100) * 360;
-                
-                // Apply the style. The CSS handles the animation (transition)
-                if (atsCircle) {
-                    setTimeout(() => {
-                        atsCircle.style.setProperty('--progress', degree + 'deg');
-                    }, 100); 
-                }
-            }
-            // --- END ATS Circular Percentage Logic ---
-        });
-    </script>
-</body>
 
-</html>
+Run the Flask application
 
+python app.py
+
+
+Open your browser and visit
+
+http://127.0.0.1:5000
+
+🧠 How It Works
+
+Upload a resume file (.pdf or .docx).
+
+The backend extracts key details (skills, contact info, etc.).
+
+The ML model classifies the candidate’s domain.
+
+A role recommendation and ATS feedback are generated.
+
+Results are displayed on the /pred page with detailed visuals.
+
+🧾 Example Output
+
+<img width="1899" height="1012" alt="Screenshot 2025-10-20 193815" src="https://github.com/user-attachments/assets/47e9ad71-377f-4da6-a187-7f10748673cb" />
+<img width="1890" height="1007" alt="Screenshot 2025-10-20 193838" src="https://github.com/user-attachments/assets/bd82ab74-d6d3-48ad-9b16-62dbdc58ead8" />
+<img width="1891" height="1004" alt="Screenshot 2025-10-20 193852" src="https://github.com/user-attachments/assets/2d60af9c-fcd7-4e6a-bbce-6b20690370df" />
+<img width="1896" height="1002" alt="Screenshot 2025-10-20 193904" src="https://github.com/user-attachments/assets/e7de8ea3-1e2f-45fb-81b3-8ea0edbf051f" />
+
+
+💬 Future Enhancements
+
+Add NLP-based keyword optimization suggestions.
+
+Integrate real-time job API (e.g., LinkedIn/Indeed).
+
+Implement multilingual resume support.
+
+Enable cloud deployment (AWS, Render, or HuggingFace Spaces).
+
+👩‍💻 Author
+
+Areeza Usmani
+gmail:areezausmani@gmail.com
+github repo:
