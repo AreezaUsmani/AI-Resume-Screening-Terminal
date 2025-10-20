@@ -81,7 +81,7 @@ http://127.0.0.1:5000
 
 <img width="1899" height="1012" alt="Screenshot 2025-10-20 193815" src="https://github.com/user-attachments/assets/47e9ad71-377f-4da6-a187-7f10748673cb" />
 <img width="1890" height="1007" alt="Screenshot 2025-10-20 193838" src="https://github.com/user-attachments/assets/bd82ab74-d6d3-48ad-9b16-62dbdc58ead8" />
-<img width="1891" height="1004" alt="Screenshot 2025-10-20 193852" src="https://github.com/user-attachments/assets/2d60af9c-fcd7-4e6a-bbce-6b20690370df" />
+<img width="1891" height="1004" alt="Screenshot 2025-10-20 193852" src="https://github.com/user-attachments/assets/14f58981-c888-462c-b912-6f165814af3e" />
 <img width="1896" height="1002" alt="Screenshot 2025-10-20 193904" src="https://github.com/user-attachments/assets/e7de8ea3-1e2f-45fb-81b3-8ea0edbf051f" />
 
 
