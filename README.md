@@ -1,69 +1,74 @@
 # AI-Resume-Screening-Terminal
-**🧠 AI Resume Screening Terminal**
+**🧠 AI Resume matcher pro**
 
-AI Resume Screening Terminal is a machine-learning–powered web application designed to analyze resumes, extract key information, predict job categories, and recommend suitable roles.
-Built with Flask and a Neon Blue UI, it offers a futuristic interface that simulates an ATS (Applicant Tracking System) environment.
+The AI Skill Matcher Pro is a modern, data-driven application designed to give job seekers an edge in the competitive hiring landscape. By leveraging machine learning principles (mocked via keyword analysis) and providing an intuitive, interactive user interface, it helps candidates analyze their resume fit, identify skill gaps, and practice tailored interview questions.
 
-**🚀 Features**
+**✨ Core Features**
 
-📂 Resume Upload: Supports PDF and DOCX resume uploads.
+**1. Resume Analysis & Dashboard**
 
-🤖 Machine Learning Model: Predicts job category (e.g., Data Science, Software Developer).
+ATS Match Score: Get an immediate ATS (Applicant Tracking System) Score based on the keywords and skills extracted from your uploaded resume.
 
-💼 Role Recommendation: Suggests relevant job titles.
+Skill Gap Analysis: Visualize your proficiency in key domains against the required level for your recommended job role using an interactive bar gauge.
 
-📊 ATS Score: Simulated score based on keyword and skill match.
+Career Recommendations: Receive a Predicted Job Category and a highly Recommended Role based on your experience.
 
-🧾 Feedback Section: Personalized suggestions to improve resume structure and targeting.
+Future Skills: Targeted suggestions for advanced skills to learn next, ensuring you stay ahead in your career path.
 
-🔍 Information Extraction: Extracts candidate name, email, phone, and skills automatically.
+**2. Interview Prep Environment**
 
-💡 Modern UI: Styled with neon blue and dark theme aesthetics.
+Dynamic Sessions: Start a structured interview session with 5 questions tailored (simulated) specifically to your predicted job role and extracted skills.
 
-**🧩 Tech Stack**
-     **Component**	          **Technology**
-      Backend	                Python (Flask)
-      
-      Frontend	                HTML, CSS (Neon Blue Theme), Bootstrap
-      
-      ML Model	                Scikit-learn / NLP
-      
-      Resume Parsing    	    PyPDF2, docx2txt, regex
-      
-      Visualization	            Chart.js / Custom progress bar
-      
-      Deployment	            Localhost (Flask)
+Interactive Practice: Utilize buttons for simulated Voice/Typing an answer, requesting a Hint (STAR method reminder), or Skipping a question.
 
-**⚙️ Installation & Setup**
+Simulated AI Scoring: Upon submission, receive instant feedback and a mock score to help you refine your response structure and content.
 
-->Follow the steps below to run the project locally:
+**3. Candidate Profile**
 
-->Clone the repository
+View mock metrics like Job Matches and Profile Completion.
 
-git clone https://github.com/<your-username>/AI-Resume-Screener.git
-cd AI-Resume-Screener
+Simulate Platform Integrations (LinkedIn, GitHub, Stack Overflow) to demonstrate how external data could be synced for a richer analysis.
+
+🛠️ Technology Stack
+
+Component         Technology                     Role
+
+Backend           Python / Flask                 Handles all file I/O (PyPDF2),                                                  routing, and the core data                                                      processing/keyword analysis                                                     logic.
+
+Frontend & UI    HTML5, JavaScript (Vanilla JS)   Manages all client-side view                                                    routing, state for the                                                          Interview Prep session, and                                                     interactive elements.
+
+Styling          Tailwind CSS                      Provides the utility-first                                                      foundation for the modern,                                                      dark-mode-first aesthetic                                                       and full responsiveness                                                         across all devices.
+
+Analysis         Pickle Models (Mocked)            Uses keyword rules within                                                       Python to simulate the                                                          predictive power of a                                                           genuine ML model for role                                                       matching and categorization.
 
 
-->Create and activate a virtual environment
+**⚙️ Setup and Installation (For Local Development)**
 
-python -m venv venv
-venv\Scripts\activate    # For Windows
-source venv/bin/activate # For Linux/Mac
+This application requires Python and Flask to run the server-side processing.
+
+Prerequisites
+
+Python 3.8+
+
+pip (Python package installer)
+
+Steps
+
+Clone the Repository:
+
+git clone [your-repo-link]
+cd ai-skill-matcher-pro
 
 
-->Install dependencies
+Install Dependencies:
 
-pip install -r requirements.txt
+pip install Flask PyPDF2
 
 
-->Run the Flask application
+Run the Flask Application:
 
 python app.py
 
-
-->Open your browser and visit
-
-http://127.0.0.1:5000
 
 **🧠 How It Works**
 
@@ -79,10 +84,12 @@ http://127.0.0.1:5000
 
 **🧾 Example Output**
 
-<img width="1899" height="1012" alt="Screenshot 2025-10-20 193815" src="https://github.com/user-attachments/assets/47e9ad71-377f-4da6-a187-7f10748673cb" />
-<img width="1890" height="1007" alt="Screenshot 2025-10-20 193838" src="https://github.com/user-attachments/assets/bd82ab74-d6d3-48ad-9b16-62dbdc58ead8" />
-<img width="1891" height="1004" alt="Screenshot 2025-10-20 193852" src="https://github.com/user-attachments/assets/14f58981-c888-462c-b912-6f165814af3e" />
-<img width="1896" height="1002" alt="Screenshot 2025-10-20 193904" src="https://github.com/user-attachments/assets/e7de8ea3-1e2f-45fb-81b3-8ea0edbf051f" />
+<img width="1913" height="930" alt="Screenshot 2025-10-28 185054" src="https://github.com/user-attachments/assets/25a79478-af4d-4b52-9bc0-2550f227a868" />
+<img width="1912" height="969" alt="Screenshot 2025-10-28 185115" src="https://github.com/user-attachments/assets/8b502572-3b1a-43cf-8373-1c737ed32e4f" />
+<img width="1887" height="967" alt="Screenshot 2025-10-30 191840" src="https://github.com/user-attachments/assets/8ba95a76-cbf3-4794-bfb0-bc50599f59e5" />
+<img width="1879" height="926" alt="Screenshot 2025-10-28 185142" src="https://github.com/user-attachments/assets/836582fc-eb6c-479d-9a3c-e6b578fbc501" />
+<img width="1891" height="973" alt="Screenshot 2025-10-30 192046" src="https://github.com/user-attachments/assets/64edcd5b-c01c-42a0-866a-5c580732dfe7" />
+<img width="1911" height="967" alt="Screenshot 2025-10-30 192012" src="https://github.com/user-attachments/assets/b4aeea71-b7d9-4b9d-af7b-97bca06f2333" />
 
 
 **💬 Future Enhancements**
