@@ -1,278 +1,754 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AI Resume Screener - Neon Blue</title>
-    
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>AI Skill Matcher</title>
+
+    <!-- Tailwind -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <script>
         tailwind.config = {
+            darkMode: 'class',
             theme: {
                 extend: {
                     colors: {
-                        'neon-blue': '#00FFFF', /* Bright Cyan/Neon Blue */
-                        'bg-dark': '#0f172a', /* Dark Blue/Slate Background */
-                        'text-light': '#f1f5f9',
-                        'accent-dark': '#0d9488', /* A complementary teal/cyan for depth */
+                        'accent-primary': '#00FFFF',
+                        'accent-secondary': '#FF00FF',
+                        'accent-tertiary': '#00FF00',
+                        'chart-blue': '#1e90ff',
+                        'chart-green': '#3cb371',
+                        'chart-brown': '#a0522d',
+                        'dark-bg-body': '#0a101e',
+                        'dark-bg-card': '#1f2937',
+                        'dark-text': '#eef2ff',
+                        'light-bg-body': '#f0f9ff',
+                        'light-bg-card': '#ffffff',
+                        'light-text': '#111827'
                     },
                     fontFamily: {
                         'mono': ['Consolas', 'Monaco', 'Courier New', 'monospace'],
-                        'sans': ['Inter', 'sans-serif'],
+                        'sans': ['Inter', 'sans-serif']
                     }
                 }
             }
         }
     </script>
-    
+
     <style>
-        /* Optional: Custom style for the neon glow effect */
-        .neon-text {
-            text-shadow: 0 0 5px rgba(0, 255, 255, 0.8), 0 0 10px rgba(0, 255, 255, 0.5);
-            transition: all 0.3s ease;
-        }
+        .dark { background-color: var(--tw-colors-dark-bg-body); color: var(--tw-colors-dark-text); }
+        body { transition: background-color 0.3s, color 0.3s; }
+        #content-main { font-size: 1rem; transition: font-size 0.2s ease-in-out; }
+        .font-small #content-main { font-size: 0.875rem; }
+        .font-big #content-main { font-size: 1.125rem; }
 
-        .neon-border {
-            box-shadow: 0 0 8px rgba(0, 255, 255, 0.6);
-            border: 1px solid #00FFFF;
-        }
-        
-        /* Style the file input button (often difficult to style directly) */
-        input[type="file"]::file-selector-button {
-            background-color: #00FFFF;
-            color: #0f172a;
-            border: none;
-            padding: 8px 16px;
-            margin-right: 15px;
-            cursor: pointer;
-            border-radius: 4px;
-            font-weight: 600;
-            transition: background-color 0.3s;
-        }
+        .match-circle { position: relative; height: 100px; width: 100px; border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: all 1.5s ease-out; }
+        .dark .match-circle { background: conic-gradient(var(--tw-colors-accent-primary) var(--progress, 0deg), var(--tw-colors-dark-bg-card) var(--progress, 0deg)); box-shadow: 0 0 15px rgba(0,255,255,0.7); }
+        .light .match-circle { background: conic-gradient(var(--tw-colors-accent-primary) var(--progress, 0deg), #e0f2fe var(--progress, 0deg)); box-shadow: 0 0 10px rgba(0,255,255,0.4); }
+        .match-circle::before { content:""; position:absolute; height:85px; width:85px; border-radius:50%; }
+        .dark .match-circle::before { background-color: var(--tw-colors-dark-bg-body); }
+        .light .match-circle::before { background-color: var(--tw-colors-light-bg-body); }
+        .progress-value { position: relative; font-size: 1.5rem; font-weight:700; color: var(--tw-colors-accent-primary); z-index:10; }
 
-        input[type="file"]::file-selector-button:hover {
-            background-color: #00cccc;
-        }
+        .skill-gauge { min-height: 250px; display:flex; flex-direction:column; justify-content:center; gap:1rem; }
+        .neon-button:hover { box-shadow: 0 0 10px var(--tw-colors-accent-primary), 0 0 5px var(--tw-colors-accent-tertiary); transform:translateY(-1px); }
 
-        /* Custom styles for the circular progress bar (ATS Score) */
-        .circle-progress {
-            position: relative;
-            height: 80px;
-            width: 80px;
-            border-radius: 50%;
-            /* Initial state (will be set by JS on load) */
-            background: conic-gradient(
-                #00FFFF var(--progress, 0deg), 
-                #0f172a var(--progress, 0deg)
-            );
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 1.5s ease-out; /* Add transition here for smooth animation */
-        }
+        .tab-active { border-bottom: 2px solid var(--tw-colors-accent-primary); color: var(--tw-colors-accent-primary) !important; font-weight:600; }
+        #message-box { position: fixed; bottom: 20px; right: 20px; z-index:100; padding:1rem; border-radius:0.5rem; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transition: opacity 0.3s, transform 0.3s; opacity:0; transform: translateY(20px); pointer-events:none; }
+        #message-box.show { opacity:1; transform: translateY(0); pointer-events:all; }
 
-        .circle-progress::before {
-            content: "";
-            position: absolute;
-            height: 60px;
-            width: 60px;
-            border-radius: 50%;
-            background-color: #0f172a;
-        }
-
-        .progress-value {
-            position: relative;
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: #00FFFF;
-            z-index: 10;
-        }
+        .skill-bar { height: 10px; border-radius: 5px; position: relative; background-color: var(--tw-colors-dark-bg-body); }
+        .skill-bar-progress { height: 100%; border-radius: 5px; transition: width 1.5s ease-out; box-shadow: 0 0 5px rgba(0,255,255,0.5); }
+        .dark .skill-bar { background-color: #374151; }
+        .light .skill-bar { background-color: #e5e7eb; }
     </style>
 </head>
 
-<body class="bg-bg-dark text-text-light font-sans min-h-screen p-5">
+<body class="bg-dark-bg-body text-dark-text font-sans min-h-screen">
+    <div id="message-box" class="bg-accent-tertiary text-gray-900 font-semibold"></div>
 
-    <div class="container mx-auto max-w-4xl bg-gray-800 rounded-xl shadow-2xl overflow-hidden border border-neon-blue/50">
+    <div class="container mx-auto max-w-6xl w-full">
+        <header class="sticky top-0 z-20 bg-gray-900 dark:bg-gray-900 light:bg-gray-100 shadow-xl border-b border-gray-700 dark:border-gray-700 light:border-gray-200">
+            <div class="flex items-center justify-between p-4">
+                <h1 class="text-2xl font-bold text-accent-primary tracking-wide transition duration-300">AI Skill Matcher Pro</h1>
+                <nav class="flex items-center space-x-6 text-sm">
+                    <button class="nav-tab text-gray-400 dark:text-gray-400 light:text-gray-600 hover:text-accent-primary pb-1 transition duration-150" data-view="home">Home</button>
+                    <button class="nav-tab text-gray-400 dark:text-gray-400 light:text-gray-600 hover:text-accent-primary pb-1 transition duration-150" data-view="upload">Upload</button>
+                    <button class="nav-tab text-gray-400 dark:text-gray-400 light:text-gray-600 hover:text-accent-primary pb-1 transition duration-150" data-view="dashboard">Dashboard</button>
+                    <button class="nav-tab text-gray-400 dark:text-gray-400 light:text-gray-600 hover:text-accent-primary pb-1 transition duration-150" data-view="interview">Interview Prep</button>
+                    <button class="nav-tab text-gray-400 dark:text-gray-400 light:text-gray-600 hover:text-accent-primary pb-1 transition duration-150" data-view="profile">Profile</button>
 
-        <header class="p-8 text-center bg-gray-900 border-b-4 border-neon-blue">
-            <h1 class="text-3xl font-mono tracking-wider uppercase neon-text">
-                <span class="text-neon-blue">AI</span> Resume Screening Terminal
-            </h1>
-            <p class="text-gray-400 mt-2">Machine Learning-Powered Talent Insight</p>
-            
-            <ul class="flex justify-center mt-4 space-x-6 text-sm text-neon-blue">
-                <li class="neon-text">✅ Categorization</li>
-                <li class="neon-text">💡 Job Recommendation</li>
-                <li class="neon-text">🔧 Info Extraction</li>
-            </ul>
+                    <div class="flex items-center space-x-2 border-l border-gray-700 dark:border-gray-700 light:border-gray-300 pl-4">
+                        <span class="text-gray-500 text-xs">Font:</span>
+                        <button id="font-small-btn" class="text-sm font-big text-gray-400 dark:text-gray-400 light:text-gray-600 hover:text-accent-primary" aria-label="Small Font">A</button>
+                        <button id="font-big-btn" class="text-lg font-big text-accent-primary hover:text-accent-primary" aria-label="Big Font">A</button>
+                    </div>
+
+                    <button id="theme-toggle" class="p-2 rounded-full hover:bg-gray-700 dark:hover:bg-gray-700 light:hover:bg-gray-200 transition duration-150" aria-label="Toggle dark mode">
+                        <svg id="moon-icon" class="w-6 h-6 text-gray-400 dark:block light:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"/></svg>
+                        <svg id="sun-icon" class="w-6 h-6 text-gray-800 dark:hidden light:block" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                    </button>
+                </nav>
+            </div>
         </header>
 
-        <main class="p-8">
-
-            <section class="mb-10 p-6 bg-gray-900 rounded-lg shadow-inner">
-                <h2 class="text-xl font-semibold text-neon-blue mb-4 uppercase">Upload Resume File</h2>
-                
-                <form id="uploadForm" action="/pred" method="post" enctype="multipart/form-data" class="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6">
-                    
-                    <input type="file" name="resume" accept=".pdf, .txt" required class="flex-grow p-2 rounded bg-gray-700 text-text-light border border-neon-blue/30 w-full md:w-auto">
-                    
-                    <button type="submit" class="w-full md:w-auto px-6 py-2 font-bold rounded uppercase bg-neon-blue text-gray-900 hover:bg-neon-blue/80 transition duration-200 shadow-lg hover:shadow-neon-blue/50">
-                        Process
-                    </button>
-                </form>
+        <main class="p-4 md:p-8" id="content-main">
+            <section id="home-view" class="view-section active space-y-8">
+                <div class="bg-dark-bg-card dark:bg-dark-bg-card light:bg-light-bg-card p-10 rounded-xl shadow-2xl border border-accent-tertiary/50 text-center">
+                    <h2 class="text-4xl font-extrabold text-accent-tertiary mb-4">Welcome to AI Skill Matcher Pro</h2>
+                    <p class="text-xl text-gray-300 dark:text-gray-300 light:text-gray-700 mb-8">Your career path starts here. Upload your resume to unlock personalized analysis, interview preparation, and future skill recommendations.</p>
+                    <button id="start-analysis-btn" class="px-10 py-4 font-bold rounded uppercase bg-accent-primary text-gray-900 neon-button text-lg hover:bg-accent-primary/80 transition duration-200 shadow-lg" onclick="document.querySelector('.nav-tab[data-view=\'upload\']').click();">Start Analysis Now</button>
+                </div>
             </section>
-            
-            {% if message %}
-            <div id="messageArea" class="bg-gray-700 p-3 rounded text-center text-neon-blue border border-neon-blue/50 font-mono mb-6">
-                {{ message }}
-            </div>
-            {% endif %}
+
+            <section id="upload-view" class="view-section hidden space-y-8">
+                <div class="bg-dark-bg-card dark:bg-dark-bg-card light:bg-light-bg-card p-6 rounded-xl shadow-lg border border-gray-700 dark:border-gray-700 light:border-gray-200">
+                    <h2 class="text-2xl font-semibold text-accent-primary mb-6">Upload Your Resume</h2>
+                    <form id="uploadForm" action="/pred" method="post" enctype="multipart/form-data" class="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-6">
+                        <input type="file" name="resume" accept=".pdf, .txt" required class="flex-grow p-3 rounded bg-gray-700 dark:bg-gray-700 light:bg-gray-100 text-dark-text dark:text-dark-text light:text-light-text border border-accent-primary/30 w-full md:w-auto">
+                        <button type="submit" class="w-full md:w-auto px-8 py-3 font-bold rounded uppercase bg-accent-primary text-gray-900 neon-button hover:bg-accent-primary/80 transition duration-200 shadow-lg">Analyze Resume</button>
+                    </form>
+                </div>
+
+                {% if message %}
+                <div id="messageArea" class="bg-red-900/50 dark:bg-red-900/50 light:bg-red-100 p-4 rounded text-center text-red-300 dark:text-red-300 light:text-red-700 border border-red-500 dark:border-red-500 light:border-red-300 font-mono">
+                    {{ message }}
+                </div>
+                {% endif %}
+            </section>
 
             {% if predicted_category %}
-            
-            <!-- HIDDEN DATA ELEMENT: Used to pass the ATS score to JavaScript without linter errors -->
-            {% if ats_score is not none %}
             <span id="ats-data" data-score="{{ ats_score }}" style="display: none;"></span>
-            {% endif %}
-            <!-- END HIDDEN DATA ELEMENT -->
+            <span id="radar-data-json" data-json="{{ radar_data|default({})|tojson|safe }}" style="display: none;"></span>
 
-            <section id="resultsSection" class="space-y-6">
-                <h2 class="text-xl font-semibold text-neon-blue uppercase neon-text">Analysis Report</h2>
-                
-                <!-- 1. SCORE, CLASSIFICATION & JOB FIT -->
-                <div class="result-card bg-gray-900 p-6 rounded-lg neon-border">
-                    <h3 class="text-lg font-bold text-neon-blue mb-3">Classification, Score & Job Fit</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-sm items-center">
-                        
-                        <!-- ATS Score Circle -->
-                        <div class="flex flex-col items-center justify-center">
-                            <b class="text-neon-blue mb-2 block uppercase text-center">ATS Score</b>
-                            <div class="circle-progress" id="ats-circle" style="--progress: 0deg;">
-                                <span class="progress-value" id="ats-value">0%</span>
+            <script>
+                document.addEventListener('DOMContentLoaded', () => {
+                    const atsDataElement = document.getElementById('ats-data');
+                    if (atsDataElement) {
+                        document.getElementById('home-view').classList.add('hidden');
+                        document.getElementById('upload-view').classList.add('hidden');
+                        document.getElementById('dashboard-view').classList.remove('hidden');
+                        document.querySelectorAll('.nav-tab').forEach(tab => tab.classList.remove('tab-active'));
+                        document.querySelector('.nav-tab[data-view="dashboard"]').classList.add('tab-active');
+                        animateAtsCircle();
+                        renderSkillGauge();
+                    } else {
+                        document.querySelector('.nav-tab[data-view="home"]').classList.add('tab-active');
+                    }
+
+                    const savedFontSize = localStorage.getItem('fontSize') || 'font-big';
+                    const contentArea = document.getElementById('content-main');
+                    const fontBigBtn = document.getElementById('font-big-btn');
+                    const fontSmallBtn = document.getElementById('font-small-btn');
+
+                    if (savedFontSize === 'font-small') {
+                        setFontSize('font-small', fontSmallBtn, fontBigBtn);
+                    } else {
+                        setFontSize('font-big', fontBigBtn, fontSmallBtn);
+                    }
+                });
+            </script>
+
+            <section id="dashboard-view" class="view-section hidden space-y-8">
+                <h2 class="text-3xl font-bold text-dark-text dark:text-dark-text light:text-light-text mb-6">Dashboard</h2>
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <div class="lg:col-span-1 space-y-6">
+                        <div class="bg-dark-bg-card dark:bg-dark-bg-card light:bg-light-bg-card p-6 rounded-xl shadow-lg border border-accent-primary/50 text-center">
+                            <h3 class="text-xl font-semibold text-accent-primary mb-4">Overall Match Score (ATS)</h3>
+                            <div class="flex flex-col items-center">
+                                <div class="match-circle" id="ats-circle" style="--progress: 0deg;">
+                                    <span class="progress-value" id="ats-value">0%</span>
+                                </div>
+                                <p class="text-sm text-gray-400 dark:text-gray-400 light:text-gray-500 mt-3">Excellent Match</p>
                             </div>
-                            <p class="text-xs text-gray-400 mt-1">(Simulated Skill Match)</p>
+                            <div class="mt-6 space-y-2">
+                                <div class="flex justify-between text-sm text-gray-300 dark:text-gray-300 light:text-gray-600 border-b border-gray-700 dark:border-gray-700 light:border-gray-200 pb-1">
+                                    <span class="text-accent-secondary">Predicted Category:</span>
+                                    <span class="text-accent-primary">{{ predicted_category }}</span>
+                                </div>
+                                <div class="flex justify-between text-sm text-gray-300 dark:text-gray-300 light:text-gray-600 border-b border-gray-700 dark:border-gray-700 light:border-gray-200 pb-1">
+                                    <span class="text-accent-secondary">Recommended Role:</span>
+                                    <span class="text-accent-primary">{{ recommended_job }}</span>
+                                </div>
+                            </div>
                         </div>
 
-                        <!-- Category and Job Recommendation -->
-                        <div class="md:col-span-2 space-y-4">
-                            <p>
-                                <b class="text-neon-blue block">Predicted Category:</b> 
-                                <span class="font-mono text-lg text-neon-blue">{{ predicted_category }}</span>
-                            </p>
-                            <p>
-                                <b class="text-neon-blue block">Recommended Role:</b> 
-                                <span class="font-mono text-lg text-neon-blue">{{ recommended_job }}</span>
-                            </p>
+                        <div class="bg-dark-bg-card dark:bg-dark-bg-card light:bg-light-bg-card p-6 rounded-xl shadow-lg border border-accent-secondary/50">
+                            <h3 class="text-xl font-semibold text-accent-secondary mb-4">❌ Missing Key Skills</h3>
+                            <p class="text-sm text-gray-400 dark:text-gray-400 light:text-gray-600 mb-3">Essential skills needed for a **{{ recommended_job }}** role:</p>
+                            <div class="flex flex-wrap gap-2">
+                                {% if missing_skills %}
+                                {% for skill in missing_skills %}
+                                <span class="bg-red-800/30 text-red-400 text-xs font-medium px-3 py-1 rounded-full border border-red-500/50">{{ skill }}</span>
+                                {% endfor %}
+                                {% else %}
+                                <p class="text-accent-tertiary text-sm">Great! No critical missing skills detected.</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="bg-dark-bg-card dark:bg-dark-bg-card light:bg-light-bg-card p-6 rounded-xl shadow-lg border border-gray-700 dark:border-gray-700 light:border-gray-200">
+                            <h3 class="text-xl font-semibold text-accent-primary mb-4">💰 Salary Insights</h3>
+                            <div class="h-40 bg-gray-700 dark:bg-gray-700 light:bg-gray-200 rounded-lg flex items-end p-2">
+                                <div class="w-1/4 h-3/4 bg-chart-blue rounded-t-lg mx-1" title="Average"></div>
+                                <div class="w-1/4 h-1/2 bg-chart-green rounded-t-lg mx-1" title="Low End"></div>
+                                <div class="w-1/4 h-full bg-chart-brown rounded-t-lg mx-1" title="High End"></div>
+                                <div class="w-1/4 h-2/3 bg-chart-blue rounded-t-lg mx-1" title="Median"></div>
+                            </div>
+                            <p class="text-sm text-gray-400 dark:text-gray-400 light:text-gray-500 mt-2 text-center">Predicted Range for **{{ recommended_job }}**</p>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-2 space-y-6">
+                        <div class="bg-dark-bg-card dark:bg-dark-bg-card light:bg-light-bg-card p-6 rounded-xl shadow-lg border border-accent-primary/50">
+                            <h3 class="text-xl font-semibold text-accent-primary mb-6">Skill Gap Analysis: Key Domains</h3>
+                            <div id="skill-gauge-area" class="skill-gauge">
+                                <div class="text-center text-gray-500 py-10">Processing skill data...</div>
+                            </div>
+                            <div class="flex justify-center space-x-6 mt-4 text-sm">
+                                <span class="flex items-center text-accent-primary"><span class="w-3 h-3 bg-accent-primary rounded-full mr-2"></span>Your Proficiency</span>
+                                <span class="flex items-center text-accent-secondary"><span class="w-3 h-3 bg-accent-secondary rounded-full mr-2"></span>Required Level</span>
+                            </div>
+                        </div>
+
+                        <div class="bg-dark-bg-card dark:bg-dark-bg-card light:bg-light-bg-card p-6 rounded-xl shadow-lg border border-accent-tertiary/50">
+                            <h3 class="text-xl font-semibold text-accent-tertiary mb-4">🚀 Future Skill Recommendations</h3>
+                            <p class="text-sm text-gray-400 dark:text-gray-400 light:text-gray-600 mb-4">Top skills essential for advancing in a **{{ recommended_job }}** career:</p>
+                            <div class="flex flex-wrap gap-3">
+                                {% for item in future_skills %}
+                                <span class="{{ item.color }} {{ item.text }} text-sm font-medium px-4 py-2 rounded-lg border border-{{ item.text[5:] }}/50">{{ item.skill }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="bg-dark-bg-card dark:bg-dark-bg-card light:bg-light-bg-card p-6 rounded-xl shadow-lg border border-gray-700 dark:border-gray-700 light:border-gray-200">
+                            <h3 class="text-xl font-semibold text-accent-secondary mb-4">Extracted & AI-Inferred Skills</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <h4 class="text-lg font-medium text-gray-300 dark:text-gray-300 light:text-gray-600 mb-2">Technical Skills (ATS Match)</h4>
+                                    <div class="flex flex-wrap gap-2">
+                                        {% for skill in extracted_skills %}
+                                        <span class="bg-accent-primary/20 text-accent-primary text-xs font-medium px-3 py-1 rounded-full border border-accent-primary/50">{{ skill }}</span>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <h4 class="text-lg font-medium text-gray-300 dark:text-gray-300 light:text-gray-600 mb-2 mt-4">AI-Inferred Soft Skills (Mock)</h4>
+                                    <div class="flex flex-wrap gap-2">
+                                        <span class="bg-accent-tertiary/20 text-accent-tertiary text-xs font-medium px-3 py-1 rounded-full border border-accent-tertiary/50">Leadership</span>
+                                        <span class="bg-accent-tertiary/20 text-accent-tertiary text-xs font-medium px-3 py-1 rounded-full border border-accent-tertiary/50">Communication</span>
+                                        <span class="bg-accent-tertiary/20 text-accent-tertiary text-xs font-medium px-3 py-1 rounded-full border border-accent-tertiary/50">Problem Solving</span>
+                                        <span class="bg-accent-tertiary/20 text-accent-tertiary text-xs font-medium px-3 py-1 rounded-full border border-accent-tertiary/50">Teamwork</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                
-                <!-- 2. PERSONALIZED ATS TIPS (DYNAMIC) -->
-                <div class="result-card bg-gray-900 p-6 rounded-lg neon-border">
-                    <h3 class="text-lg font-bold text-neon-blue mb-4">💡 Personalized ATS Feedback</h3>
-                    <div class="space-y-4">
-                    {% for tip in personalized_tips %}
-                        {% set color = 'text-green-400' if tip.category == 'Positive' else ('text-red-400' if tip.category == 'Critical' else ('text-yellow-400' if tip.category == 'High Priority' else 'text-cyan-400')) %}
-                        
-                        <div class="p-3 rounded-lg border-l-4 border-{{ color[5:] }}">
-                            <p class="font-semibold {{ color }}">
-                                {{ tip.title }} 
-                                <span class="text-xs text-gray-500">({{ tip.category }})</span>
-                            </p>
-                            <p class="text-sm text-text-light/80 mt-1">{{ tip.detail }}</p>
-                        </div>
-                    {% endfor %}
-                    </div>
-                </div>
-
-                <!-- 3. EXTRACTED CONTACT INFORMATION -->
-                <div class="result-card bg-gray-900 p-6 rounded-lg neon-border">
-                    <h3 class="text-lg font-bold text-neon-blue mb-3">Extracted Contact Information</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm font-mono">
-                        <p><b>Name:</b> {{ name }}</p>
-                        <p><b>Phone No:</b> {{ phone }}</p>
-                        <p><b>Email:</b> {{ email }}</p>
-                    </div>
-                </div>
-                
-                <!-- 4. PARSED RESUME DETAILS -->
-                <div class="result-card bg-gray-900 p-6 rounded-lg neon-border">
-                    <h3 class="text-lg font-bold text-neon-blue mb-3">Parsed Resume Details</h3>
-                    
-                    <p class="text-neon-blue font-semibold mt-4 mb-2">Skills:</p>
-                    {% if extracted_skills %}
-                    <ul class="grid grid-cols-2 md:grid-cols-3 gap-2 list-none p-0 text-sm">
-                        {% for skill in extracted_skills %}
-                        <li class="bg-gray-800 p-2 rounded border border-accent-dark font-mono text-accent-dark">
-                            &gt; {{ skill }}
-                        </li>
-                        {% endfor %}
-                    </ul>
-                    {% else %}
-                    <p class="text-gray-400 text-center">No core skills were reliably extracted.</p>
-                    {% endif %}
-
-                    <p class="text-neon-blue font-semibold mt-6 mb-2">Education:</p>
-                    {% if extracted_education %}
-                    <ul class="list-none p-0 text-sm">
-                        {% for edu in extracted_education %}
-                        <li class="bg-gray-800 p-3 rounded mb-2 border-l-4 border-neon-blue/70">
-                            {{ edu }}
-                        </li>
-                        {% endfor %}
-                    </ul>
-                    {% else %}
-                    <p class="text-gray-400 text-center">No educational history found.</p>
-                    {% endif %}
-                </div>
-
             </section>
-            {% endif %}
 
+            <section id="interview-view" class="view-section hidden space-y-8">
+                <h2 class="text-3xl font-bold text-dark-text dark:text-dark-text light:text-light-text mb-6">Interview Prep</h2>
+
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                    <div class="lg:col-span-1 bg-dark-bg-card dark:bg-dark-bg-card light:bg-light-bg-card p-6 rounded-xl shadow-lg border border-gray-700 dark:border-gray-700 light:border-gray-200 h-fit">
+                        <h3 class="text-xl font-semibold text-accent-primary mb-4">Interview Settings</h3>
+                        <p class="text-sm text-gray-400 dark:text-gray-400 light:text-gray-500 mb-4">Target Role: <b class="text-dark-text dark:text-dark-text light:text-light-text">{{ recommended_job or 'Senior Software Engineer' }}</b></p>
+
+                        <div class="space-y-3">
+                            <p class="font-medium text-gray-300 dark:text-gray-300 light:text-gray-700">Interview Type</p>
+                            <div class="flex space-x-4 text-sm">
+                                <label><input type="radio" name="type" checked class="text-accent-primary mr-1 focus:ring-accent-primary"> Technical</label>
+                                <label><input type="radio" name="type" class="text-accent-primary mr-1 focus:ring-accent-primary"> Behavioral</label>
+                                <label><input type="radio" name="type" class="text-accent-primary mr-1 focus:ring-accent-primary"> Mixed</label>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <p class="font-medium text-gray-300 dark:text-gray-300 light:text-gray-700 mb-2">Difficulty Level</p>
+                            <input type="range" min="1" max="3" value="2" class="w-full h-2 bg-gray-700 dark:bg-gray-700 light:bg-gray-300 rounded-lg appearance-none cursor-pointer range-lg">
+                            <div class="flex justify-between text-xs text-gray-400 dark:text-gray-400 light:text-gray-500 mt-1">
+                                <span>Easy</span><span>Medium</span><span>Hard</span>
+                            </div>
+                        </div>
+
+                        <!-- Start button updated to startInterviewPractice() -->
+                        <button id="startInterviewBtn" onclick="startInterviewPractice()" class="w-full mt-6 px-4 py-3 font-bold rounded uppercase bg-accent-secondary text-gray-900 neon-button hover:bg-accent-secondary/80 transition duration-200">
+                            ▶ Start Interview Practice
+                        </button>
+                    </div>
+
+                    <div class="lg:col-span-3 bg-dark-bg-card dark:bg-dark-bg-card light:bg-light-bg-card p-8 rounded-xl shadow-lg border border-accent-primary/50">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 id="interview-header" class="text-2xl font-bold text-dark-text dark:text-dark-text light:text-light-text">Question 0 of 5</h3>
+                            <div class="flex space-x-2">
+                                <span id="tag-type" class="bg-accent-tertiary/90 text-gray-900 text-xs font-medium px-3 py-1 rounded-full">Type</span>
+                                <span id="tag-difficulty" class="bg-accent-secondary/90 text-gray-900 text-xs font-medium px-3 py-1 rounded-full">Level</span>
+                            </div>
+                        </div>
+
+                        <p id="interview-question" class="text-lg text-gray-200 dark:text-gray-200 light:text-gray-700 mb-6">
+                            Click "Start Interview Practice" to begin — a dynamic set of 5 mixed questions will be loaded.
+                        </p>
+
+                        <div class="flex space-x-4 mb-6">
+                            <button onclick="handleInterviewButton('Type')" class="flex items-center px-4 py-2 bg-gray-700 dark:bg-gray-700 light:bg-gray-200 rounded-lg hover:bg-gray-600 dark:hover:bg-gray-600 light:hover:bg-gray-300 transition duration-150 text-sm">
+                                <span class="text-accent-primary mr-2">⌨</span> Type Answer
+                            </button>
+                            <button onclick="handleInterviewButton('Voice')" class="flex items-center px-4 py-2 bg-gray-700 dark:bg-gray-700 light:bg-gray-200 rounded-lg hover:bg-gray-600 dark:hover:bg-gray-600 light:hover:bg-gray-300 transition duration-150 text-sm">
+                                <span class="text-accent-primary mr-2">🎤</span> Voice Answer
+                            </button>
+                            <button onclick="handleInterviewButton('Hint')" class="flex items-center px-4 py-2 bg-gray-700 dark:bg-gray-700 light:bg-gray-200 rounded-lg hover:bg-gray-600 dark:hover:bg-gray-600 light:hover:bg-gray-300 transition duration-150 text-sm">
+                                <span class="text-accent-primary mr-2">💡</span> Show Hint
+                            </button>
+                        </div>
+
+                        <textarea id="interview-textarea" rows="8" class="w-full p-4 bg-gray-800 dark:bg-gray-800 light:bg-gray-100 rounded-lg border border-gray-700 dark:border-gray-700 light:border-gray-300 text-dark-text dark:text-dark-text light:text-light-text placeholder-gray-500 focus:ring-2 focus:ring-accent-primary focus:border-accent-primary" placeholder="Type your answer here..."></textarea>
+
+                        <div class="flex justify-end space-x-4 mt-6">
+                            <button onclick="handleInterviewButton('Skip')" class="px-6 py-3 font-bold rounded uppercase bg-gray-700 dark:bg-gray-700 light:bg-gray-200 text-gray-300 dark:text-gray-300 light:text-gray-700 hover:bg-gray-600 dark:hover:bg-gray-600 light:hover:bg-gray-300 transition duration-150">
+                                ⏭ Skip Question
+                            </button>
+                            <button onclick="handleInterviewButton('Submit')" class="px-6 py-3 font-bold rounded uppercase bg-accent-primary text-gray-900 neon-button hover:bg-accent-primary/80 transition duration-200">
+                                ✅ Submit Answer
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="profile-view" class="view-section hidden space-y-8">
+                <h2 class="text-3xl font-bold text-dark-text dark:text-dark-text light:text-light-text mb-6">Candidate Profile</h2>
+
+                <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+                    <div class="lg:col-span-1 space-y-6">
+                        <div class="bg-dark-bg-card dark:bg-dark-bg-card light:bg-light-bg-card p-6 rounded-xl shadow-lg border border-accent-primary/50 text-center">
+                            <div class="w-24 h-24 bg-gray-700 dark:bg-gray-700 light:bg-light-bg-card rounded-full mx-auto mb-4 flex items-center justify-center text-4xl text-gray-400 dark:text-gray-400 light:text-gray-600">👤</div>
+                            <h3 class="text-xl font-bold text-dark-text dark:text-dark-text light:text-light-text">{{ name or 'John Doe' }}</h3>
+                            <p class="text-accent-primary">{{ recommended_job or 'Senior Software Engineer' }}</p>
+                            <div class="mt-4 text-sm bg-gray-700 dark:bg-gray-700 light:bg-light-bg-card p-3 rounded-lg">
+                                <p class="text-left font-semibold mb-2 text-dark-text dark:text-dark-text light:text-light-text">Profile Complete: <span class="text-accent-primary">87%</span></p>
+                                <div class="w-full bg-gray-800 dark:bg-gray-800 light:bg-light-bg-card rounded-full h-2.5">
+                                    <div class="bg-accent-primary h-2.5 rounded-full" style="width: 87%"></div>
+                                </div>
+                            </div>
+                            <div class="flex justify-around mt-4 pt-4 border-t border-gray-700 dark:border-gray-700 light:border-gray-200">
+                                <div><p class="text-2xl font-bold text-dark-text dark:text-dark-text light:text-light-text">12</p><p class="text-sm text-gray-400 dark:text-gray-400 light:text-gray-500">Job Matches</p></div>
+                                <div><p class="text-2xl font-bold text-dark-text dark:text-dark-text light:text-light-text">94%</p><p class="text-sm text-gray-400 dark:text-gray-400 light:text-gray-500">Top Match</p></div>
+                                <div><p class="text-2xl font-bold text-dark-text dark:text-dark-text light:text-light-text">{{ extracted_skills|length }}</p><p class="text-sm text-gray-400 dark:text-gray-400 light:text-gray-500">Skills</p></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-3 bg-dark-bg-card dark:bg-dark-bg-card light:bg-light-bg-card p-8 rounded-xl shadow-lg border border-gray-700 dark:border-gray-700 light:border-gray-200">
+                        <h3 class="text-2xl font-semibold text-accent-primary mb-6 border-b border-gray-700 dark:border-gray-700 light:border-gray-200 pb-3">Platform Integrations</h3>
+                        <p class="text-gray-400 dark:text-gray-400 light:text-gray-500 mb-6">Connect your professional profiles for enhanced AI analysis and automatic skill detection.</p>
+
+                        <div class="space-y-6">
+                            <div class="flex items-center justify-between p-4 bg-gray-700 dark:bg-gray-700 light:bg-light-bg-card rounded-lg border border-gray-600 dark:border-gray-600 light:border-gray-300">
+                                <div class="flex items-center space-x-4">
+                                    <div class="text-2xl text-blue-400">in</div>
+                                    <div>
+                                        <p class="font-bold text-dark-text dark:text-dark-text light:text-light-text">LinkedIn</p>
+                                        <p class="text-sm text-gray-400 dark:text-gray-400 light:text-gray-500">Sync professional profile, connections, and experience</p>
+                                    </div>
+                                </div>
+                                <!-- pass this to handler -->
+                                <button id="linkedin-btn" onclick="handleProfileSync('LinkedIn', this)" class="px-4 py-2 bg-green-600 text-gray-900 neon-button hover:bg-green-700 transition duration-200">Sync Now</button>
+                            </div>
+
+                            <div class="flex items-center justify-between p-4 bg-gray-700 dark:bg-gray-700 light:bg-light-bg-card rounded-lg border border-gray-600 dark:border-gray-600 light:border-gray-300">
+                                <div class="flex items-center space-x-4">
+                                    <div class="text-2xl text-gray-300 dark:text-gray-300 light:text-gray-600">💻</div>
+                                    <div>
+                                        <p class="font-bold text-dark-text dark:text-dark-text light:text-light-text">GitHub</p>
+                                        <p class="text-sm text-gray-400 dark:text-gray-400 light:text-gray-500">Import repositories, coding activity, and technology stack</p>
+                                    </div>
+                                </div>
+                                <button id="github-btn" onclick="handleProfileSync('GitHub', this)" class="px-4 py-2 bg-gray-500 text-dark-text dark:text-dark-text light:text-light-text rounded-lg text-sm hover:bg-gray-600">Connect</button>
+                            </div>
+
+                            <div class="flex items-center justify-between p-4 bg-gray-700 dark:bg-gray-700 light:bg-light-bg-card rounded-lg border border-gray-600 dark:border-gray-600 light:border-gray-300">
+                                <div class="flex items-center space-x-4">
+                                    <div class="text-2xl text-orange-400">🔥</div>
+                                    <div>
+                                        <p class="font-bold text-dark-text dark:text-dark-text light:text-light-text">Stack Overflow</p>
+                                        <p class="text-sm text-gray-400 dark:text-gray-400 light:text-gray-500">Import your reputation, answers, and technical expertise</p>
+                                    </div>
+                                </div>
+                                <button id="so-btn" onclick="handleProfileSync('Stack Overflow', this)" class="px-4 py-2 bg-gray-500 text-dark-text dark:text-dark-text light:text-light-text rounded-lg text-sm hover:bg-gray-600">Connect</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            {% endif %}
         </main>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const fileInput = document.querySelector('input[type="file"]');
-            if (fileInput) {
-                fileInput.addEventListener('change', (e) => {
-                    const fileName = e.target.files[0] ? e.target.files[0].name : 'Select a file...';
-                    console.log('File selected:', fileName);
+        // ---------- Utility message box ----------
+        function showMessage(text, classes = 'bg-accent-tertiary text-gray-900', duration = 3000) {
+            const box = document.getElementById('message-box');
+            box.className = '';
+            box.classList.add(...classes.split(' '));
+            box.textContent = text;
+            box.classList.add('show');
+            setTimeout(() => box.classList.remove('show'), duration);
+        }
+
+        // ---------- Theme toggle ----------
+        document.getElementById('theme-toggle').addEventListener('click', () => {
+            const html = document.documentElement;
+            const currentMode = html.classList.contains('light') ? 'light' : 'dark';
+            if (currentMode === 'dark') {
+                html.classList.remove('dark'); html.classList.add('light');
+                document.body.classList.remove('bg-dark-bg-body', 'text-dark-text');
+                document.body.classList.add('bg-light-bg-body', 'text-light-text');
+                localStorage.setItem('theme', 'light');
+            } else {
+                html.classList.remove('light'); html.classList.add('dark');
+                document.body.classList.remove('bg-light-bg-body', 'text-light-text');
+                document.body.classList.add('bg-dark-bg-body', 'text-dark-text');
+                localStorage.setItem('theme', 'dark');
+            }
+            renderSkillGauge();
+            animateAtsCircle();
+        });
+
+        // ---------- Font size ----------
+        const fontBigBtn = document.getElementById('font-big-btn');
+        const fontSmallBtn = document.getElementById('font-small-btn');
+        function setFontSize(sizeClass, activeBtn, inactiveBtn) {
+            document.body.classList.remove('font-small', 'font-big');
+            document.body.classList.add(sizeClass);
+            activeBtn.classList.add('text-accent-primary'); activeBtn.classList.remove('text-gray-400', 'light:text-gray-600');
+            inactiveBtn.classList.remove('text-accent-primary'); inactiveBtn.classList.add('text-gray-400', 'light:text-gray-600');
+            localStorage.setItem('fontSize', sizeClass);
+        }
+        if (fontBigBtn && fontSmallBtn) {
+            fontBigBtn.addEventListener('click', () => setFontSize('font-big', fontBigBtn, fontSmallBtn));
+            fontSmallBtn.addEventListener('click', () => setFontSize('font-small', fontSmallBtn, fontBigBtn));
+        }
+
+        // ---------- View routing ----------
+        const navTabs = document.querySelectorAll('.nav-tab');
+        const viewSections = document.querySelectorAll('.view-section');
+        navTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const targetView = tab.getAttribute('data-view');
+                viewSections.forEach(section => {
+                    section.classList.add('hidden');
+                    section.classList.remove('active');
                 });
+                navTabs.forEach(t => t.classList.remove('tab-active'));
+                const activeSection = document.getElementById(targetView + '-view');
+                if (activeSection) {
+                    activeSection.classList.remove('hidden');
+                    activeSection.classList.add('active');
+                }
+                tab.classList.add('tab-active');
+                if (targetView === 'dashboard') { animateAtsCircle(); renderSkillGauge(); }
+            });
+        });
+
+        // ---------- ATS Circle ----------
+        function animateAtsCircle() {
+            const atsDataElement = document.getElementById('ats-data');
+            if (!atsDataElement) return;
+            const atsScoreString = atsDataElement.dataset.score;
+            const atsScore = parseInt(atsScoreString, 10) || 0;
+            const atsCircle = document.getElementById('ats-circle');
+            const atsValue = document.getElementById('ats-value');
+            if (!atsCircle) return;
+
+            atsCircle.style.setProperty('--progress', '0deg');
+            atsValue.textContent = '0%';
+            const degree = (atsScore / 100) * 360;
+            setTimeout(() => {
+                atsCircle.style.setProperty('--progress', degree + 'deg');
+                let startValue = 0;
+                const duration = 1500;
+                const startTime = performance.now();
+                function updateValue(currentTime) {
+                    const elapsedTime = currentTime - startTime;
+                    const progress = Math.min(1, elapsedTime / duration);
+                    const easedProgress = 1 - Math.pow(1 - progress, 3);
+                    const currentValue = Math.floor(startValue + easedProgress * (atsScore - startValue));
+                    atsValue.textContent = currentValue + '%';
+                    if (progress < 1) requestAnimationFrame(updateValue);
+                }
+                requestAnimationFrame(updateValue);
+            }, 100);
+        }
+
+        // ---------- Skill Gauge (radar replacement) ----------
+        function renderSkillGauge() {
+            const gaugeArea = document.getElementById('skill-gauge-area');
+            const dataElement = document.getElementById('radar-data-json');
+            if (!gaugeArea) return;
+            let radarData;
+            try { radarData = dataElement ? JSON.parse(dataElement.dataset.json) : null; }
+            catch (e) { radarData = null; }
+            if (!radarData) {
+                // fallback demo data
+                radarData = { labels: ['Technical Skill','Soft Skill','Tool Proficiency'], your_scores: [70,60,50], job_scores: [80,75,70], job_title:'Skills' };
+            }
+            gaugeArea.innerHTML = '';
+            const skills = radarData.labels || [];
+            const yourScores = radarData.your_scores || [];
+            const jobScores = radarData.job_scores || [];
+            if (skills.length === 0) { gaugeArea.innerHTML = '<div class="text-center text-gray-500 py-10">No skill data available for comparison.</div>'; return; }
+
+            skills.forEach((skill, idx) => {
+                const yourScore = yourScores[idx] || 0;
+                const jobScore = jobScores[idx] || 100;
+                const yourWidth = Math.min(100, yourScore);
+                const jobWidth = Math.min(100, jobScore);
+                let markerColor = 'accent-secondary';
+                if (yourScore >= jobScore) markerColor = 'accent-tertiary';
+                const skillElement = document.createElement('div');
+                skillElement.className = 'w-full space-y-2';
+                skillElement.innerHTML = `
+                    <div class="flex justify-between items-center text-sm font-medium">
+                        <span class="text-dark-text light:text-light-text">${skill}</span>
+                        <span class="text-accent-primary">${yourScore}%</span>
+                    </div>
+                    <div class="skill-bar relative">
+                        <div class="skill-bar-progress bg-accent-primary" style="width: ${yourWidth}%"></div>
+                        <div class="absolute inset-y-0 h-4 w-1 top-1/2 -translate-y-1/2 rounded-full shadow-lg bg-${markerColor} border-2 border-dark-bg-card dark:border-dark-bg-card light:border-light-bg-body transition-all duration-1000" style="left: ${jobWidth}%; margin-left: -2px;" title="Required: ${jobScore}%"></div>
+                    </div>
+                `;
+                gaugeArea.appendChild(skillElement);
+            });
+        }
+
+        // ---------- Interview: dynamic mixed Q pool & session logic ----------
+        const questionPool = [
+            { q: "Explain your experience with React hooks and how you'd optimize a component that re-renders frequently.", hint: "Think useMemo, useCallback and splitting components. Show when you'd use each.", type: "Technical", level: "Medium" },
+            { q: "Describe a time you resolved a conflict within your team. What did you do and what was the outcome?", hint: "Highlight active listening, identifying root cause, and compromise or escalation.", type: "Behavioral", level: "Medium" },
+            { q: "How would you design a REST API for a simple task management app? Mention endpoints and data models.", hint: "Cover CRUD endpoints, authentication and resource names; keep responses stateless.", type: "Technical", level: "Medium" },
+            { q: "Tell me about a project where you had to learn a new technology quickly. How did you approach it?", hint: "Focus on learning resources, prototyping, and measuring progress.", type: "Behavioral", level: "Easy" },
+            { q: "What are the differences between process and thread? When would you choose one over the other?", hint: "Mention isolation vs shared memory, performance, and context switching costs.", type: "Technical", level: "Hard" },
+            { q: "How do you prioritize competing deadlines from multiple stakeholders?", hint: "Talk about communication, renegotiation, and visibility (e.g., weekly syncs).", type: "Behavioral", level: "Medium" },
+            { q: "Explain memory leaks in JavaScript and how to detect/fix them.", hint: "Mention closures, detached DOM nodes, devtools memory profiler, and best practices.", type: "Technical", level: "Hard" },
+            { q: "Give an example when you made a mistake at work. How did you handle it?", hint: "Be honest, show accountability, and explain corrective action and prevention.", type: "Behavioral", level: "Easy" },
+            { q: "How would you implement authentication in a single-page app? Pros/cons of JWT vs sessions.", hint: "Discuss token storage, XSS/CSRF, refresh tokens, and server-side sessions tradeoffs.", type: "Technical", level: "Medium" },
+            { q: "Describe your approach to mentorship and helping junior engineers grow.", hint: "Talk about regular feedback, pairing, growth plans and encouraging autonomy.", type: "Behavioral", level: "Easy" },
+            { q: "Walk through optimizing an SQL query that runs slowly on large datasets.", hint: "Consider indexes, explain plans, avoiding SELECT *, and denormalization when necessary.", type: "Technical", level: "Hard" },
+            { q: "How do you handle feedback that you disagree with from your manager?", hint: "Show openness, ask clarifying questions, propose compromise and document outcome.", type: "Behavioral", level: "Medium" }
+        ];
+
+        let sessionQuestions = []; // the 5 selected for this session
+        let currentQuestionIndex = -1;
+
+        function shuffleArray(arr) {
+            // Fisher-Yates
+            const a = arr.slice();
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        function startInterviewPractice() {
+            // pick 5 random questions (mixed)
+            const shuffled = shuffleArray(questionPool);
+            sessionQuestions = shuffled.slice(0, 5);
+            currentQuestionIndex = 0;
+            // show interview view
+            document.querySelector('.nav-tab[data-view="interview"]').click();
+            updateInterviewUI();
+            showMessage('Interview session started: 5 questions loaded.', 'bg-accent-primary text-gray-900', 2500);
+            // clear textarea
+            document.getElementById('interview-textarea').value = '';
+        }
+
+        function updateInterviewUI() {
+            const header = document.getElementById('interview-header');
+            const questionEl = document.getElementById('interview-question');
+            const tagType = document.getElementById('tag-type');
+            const tagDiff = document.getElementById('tag-difficulty');
+            const total = sessionQuestions.length || 0;
+
+            if (currentQuestionIndex < 0 || currentQuestionIndex >= total) {
+                header.textContent = `Question 0 of ${total}`;
+                questionEl.textContent = 'No question loaded.';
+                tagType.textContent = '';
+                tagDiff.textContent = '';
+                return;
             }
 
-            // --- ATS Circular Percentage Logic ---
-            const atsDataElement = document.getElementById('ats-data');
-            
-            // Check if the hidden data element exists (it only exists if the server calculated a score)
-            if (atsDataElement) {
-                // Read the score from the data attribute and parse it
-                const atsScoreString = atsDataElement.dataset.score;
-                const atsScore = parseInt(atsScoreString, 10);
-                
-                const atsCircle = document.getElementById('ats-circle');
-                const atsValue = document.getElementById('ats-value');
+            const qObj = sessionQuestions[currentQuestionIndex];
+            header.textContent = `Question ${currentQuestionIndex + 1} of ${total}`;
+            questionEl.textContent = qObj.q;
+            tagType.textContent = qObj.type;
+            tagDiff.textContent = qObj.level;
+            // Adjust badges styling rapidly
+            tagType.className = qObj.type === 'Technical' ? 'bg-accent-tertiary/90 text-gray-900 text-xs font-medium px-3 py-1 rounded-full' : 'bg-accent-secondary/90 text-gray-900 text-xs font-medium px-3 py-1 rounded-full';
+            tagDiff.className = 'bg-accent-secondary/90 text-gray-900 text-xs font-medium px-3 py-1 rounded-full';
+            // reset textarea placeholder
+            document.getElementById('interview-textarea').placeholder = 'Type your answer here...';
+        }
 
-                // Set the initial visual state
-                atsValue.textContent = atsScore + '%';
-                
-                // Calculate the degree for the conic gradient (0 to 360)
-                const degree = (atsScore / 100) * 360;
-                
-                // Apply the style. The CSS handles the animation (transition)
-                if (atsCircle) {
+        // ---------- Interview Button Handler ----------
+        let voiceRecordingTimeout = null;
+        function handleInterviewButton(action) {
+            const textArea = document.getElementById('interview-textarea');
+            const total = sessionQuestions.length || 0;
+            if (sessionQuestions.length === 0 && action !== 'Type') {
+                showMessage('Please start the interview first (Start Interview Practice).', 'bg-red-600 text-white');
+                return;
+            }
+            const qObj = sessionQuestions[currentQuestionIndex];
+
+            switch (action) {
+                case 'Type':
+                    textArea.focus();
+                    showMessage('Typing mode activated. Your input is being recorded locally.', 'bg-accent-tertiary text-gray-900');
+                    break;
+
+                case 'Voice':
+                    // Simulate short voice recording (no mic API)
+                    showMessage('Recording (simulated) — please speak now...', 'bg-accent-primary text-gray-900', 2000);
+                    // simulate capture -> append a small placeholder text after 2s
+                    clearTimeout(voiceRecordingTimeout);
+                    voiceRecordingTimeout = setTimeout(() => {
+                        const simulated = '\n[Voice answer recorded — summarize your main points here.]';
+                        textArea.value = (textArea.value + simulated).trim();
+                        showMessage('Recording added to answer (simulated).', 'bg-accent-primary text-gray-900', 2000);
+                    }, 1800);
+                    break;
+
+                case 'Hint':
+                    if (qObj && qObj.hint) {
+                        showMessage('Hint: ' + qObj.hint, 'bg-accent-secondary text-gray-900', 5000);
+                    } else {
+                        showMessage('No hint available for this question.', 'bg-gray-500 text-dark-text');
+                    }
+                    break;
+
+                case 'Skip':
+                    // move to next question (if any). If at last, wrap to end but inform user.
+                    if (currentQuestionIndex < total - 1) {
+                        currentQuestionIndex++;
+                        document.getElementById('interview-textarea').value = '';
+                        updateInterviewUI();
+                        showMessage('Skipped. Next question loaded.', 'bg-gray-500 text-dark-text');
+                    } else {
+                        showMessage('This was the last question. You can review or restart the session.', 'bg-gray-500 text-dark-text', 3500);
+                    }
+                    break;
+
+                case 'Submit':
+                    const currentAnswer = textArea.value.trim();
+                    if (currentAnswer.length < 50) {
+                        showMessage('Your answer is too short. Please elaborate (>= 50 characters).', 'bg-red-600 text-white', 3000);
+                        return;
+                    }
+                    // Simulate AI scoring and feedback
+                    showMessage('Submitting answer... AI is analyzing.', 'bg-accent-primary text-gray-900', 2000);
                     setTimeout(() => {
-                        atsCircle.style.setProperty('--progress', degree + 'deg');
-                    }, 100); 
+                        // Very simple scoring heuristic: length + keyword bonus
+                        let score = Math.min(100, Math.floor(Math.min(200, currentAnswer.length) / 2));
+                        // small keyword heuristics
+                        const keywords = ['optimize','performance','useMemo','memo','useCallback','testing','scalability','refactor','design','team','communication','leadership','feedback','database','index'];
+                        const lower = currentAnswer.toLowerCase();
+                        let bonus = 0;
+                        keywords.forEach(k => { if (lower.includes(k.toLowerCase())) bonus += 3; });
+                        score = Math.min(100, score + bonus);
+                        // Feedback generation (short)
+                        let feedback = '';
+                        if (score >= 80) feedback = 'Strong answer — clear, structured, with relevant specifics. Add metrics if possible.';
+                        else if (score >= 60) feedback = 'Good answer — add more concrete examples and measurable results.';
+                        else feedback = 'Needs improvement — try using the STAR method (Situation, Task, Action, Result) and include concrete numbers.';
+                        showMessage(`AI Feedback: Score ${score}% — ${feedback}`, score >= 60 ? 'bg-green-600 text-white' : 'bg-red-600 text-white', 6000);
+
+                        // auto-advance to next question after a short delay (but only if more remain)
+                        if (currentQuestionIndex < total - 1) {
+                            setTimeout(() => {
+                                currentQuestionIndex++;
+                                document.getElementById('interview-textarea').value = '';
+                                updateInterviewUI();
+                            }, 1200);
+                        } else {
+                            // end of session
+                            setTimeout(() => {
+                                showMessage('Interview session complete. Consider restarting to practice another 5 questions.', 'bg-accent-tertiary text-gray-900', 4000);
+                                // optionally reset currentQuestionIndex to last to avoid errors
+                                updateInterviewUI();
+                            }, 1200);
+                        }
+                    }, 1200);
+                    break;
+            }
+        }
+
+        // ---------- Profile sync handler (simulate OAuth & syncing) ----------
+        function handleProfileSync(platform, btn) {
+            if (!btn) {
+                showMessage(`Starting sync with ${platform}...`, 'bg-accent-primary text-gray-900');
+                return;
+            }
+            if (btn.disabled) return;
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = 'Connecting...';
+            btn.classList.add('opacity-80', 'cursor-wait');
+
+            // Simulate different durations for different platforms
+            const delay = platform === 'LinkedIn' ? 1800 : (platform === 'GitHub' ? 1500 : 2000);
+
+            showMessage(`Connecting to ${platform}...`, 'bg-accent-primary text-gray-900', 2000);
+
+            setTimeout(() => {
+                btn.textContent = 'Synced ✅';
+                btn.classList.remove('opacity-80', 'cursor-wait');
+                btn.classList.add('bg-green-700', 'text-white');
+                btn.disabled = true;
+                showMessage(`${platform} synced successfully! Profile updated.`, 'bg-accent-tertiary text-gray-900', 3000);
+            }, delay);
+        }
+
+        // ---------- Initial setup ----------
+        document.addEventListener('DOMContentLoaded', () => {
+            const html = document.documentElement;
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            if (savedTheme === 'light') {
+                html.classList.remove('dark'); html.classList.add('light');
+                document.body.classList.remove('bg-dark-bg-body', 'text-dark-text');
+                document.body.classList.add('bg-light-bg-body', 'text-light-text');
+            } else {
+                document.body.classList.add('bg-dark-bg-body', 'text-dark-text');
+            }
+
+            const savedFontSize = localStorage.getItem('fontSize') || 'font-big';
+            document.body.classList.add(savedFontSize);
+            if (fontBigBtn && fontSmallBtn) {
+                if (savedFontSize === 'font-small') {
+                    fontSmallBtn.classList.add('text-accent-primary'); fontBigBtn.classList.remove('text-accent-primary');
+                } else {
+                    fontBigBtn.classList.add('text-accent-primary'); fontSmallBtn.classList.remove('text-accent-primary');
                 }
             }
-            // --- END ATS Circular Percentage Logic ---
+
+            const hasResults = document.getElementById('ats-data');
+            if (hasResults) {
+                document.querySelector('.nav-tab[data-view="dashboard"]').click();
+            } else {
+                document.querySelector('.nav-tab[data-view="home"]').click();
+            }
+
+            // If user clicks directly on nav "interview", ensure UI is up-to-date
+            document.querySelector('.nav-tab[data-view="interview"]').addEventListener('click', () => {
+                if (sessionQuestions.length > 0) updateInterviewUI();
+            });
         });
     </script>
 </body>
-
 </html>
-
