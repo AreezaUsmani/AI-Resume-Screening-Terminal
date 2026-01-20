@@ -1,5 +1,5 @@
 # AI-Resume-Screening-Terminal
-**🧠 AI Resume matcher pro**
+**🧠 AI Skill matcher pro**
 
 The AI Skill Matcher Pro is a modern, data-driven application designed to give job seekers an edge in the competitive hiring landscape. By leveraging machine learning principles (mocked via keyword analysis) and providing an intuitive, interactive user interface, it helps candidates analyze their resume fit, identify skill gaps, and practice tailored interview questions.
 
